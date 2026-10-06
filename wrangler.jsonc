@@ -1,0 +1,28 @@
+{
+  "name": "roxy-rider-survey",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-05-01",
+  "account_id": "dff1eda4de15d29b54db79aa5292eaff",
+  "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "survey.roxy-design.com",
+      "custom_domain": true
+    },
+    {
+      "pattern": "survey-api.roxy-design.com",
+      "custom_domain": true
+    }
+  ],
+  "vars": {
+    "GITHUB_PAGES_URL": "https://sliuhaob.github.io/rider-survey/"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "roxy-rider-survey",
+      "database_id": "4bf3793c-a285-4c7e-9135-da9e5e8c09f9",
+      "migrations_dir": "migrations"
+    }
+  ]
+}
