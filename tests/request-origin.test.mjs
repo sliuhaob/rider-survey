@@ -55,3 +55,23 @@ test('form submissions cannot write answers and export still requires the secret
  assert.equal((await post({Referer:base+'/'},env,'/api/export')).status,401);
  assert.equal(env.rows.size,0);
 });
+
+test('HTTP visits and in-flight submissions upgrade without changing the method',async()=>{
+ for(const method of ['GET','POST']){
+  const response=await worker.fetch(new Request('http://survey.roxy-design.com/api/responses?v=4',{method}),environment());
+  assert.equal(response.status,307);
+  assert.equal(response.headers.get('Location'),base+'/api/responses?v=4');
+ }
+});
+test('an already-open HTTP form can finish over HTTPS, without gaining export access',async()=>{
+ const origin='http://survey.roxy-design.com';
+ const env=environment();
+ const response=await post({Origin:origin,'Sec-Fetch-Site':'cross-site','X-Survey-Request':'1'},env);
+ assert.equal(response.status,200);assert.equal(env.rows.size,1);
+ assert.equal(response.headers.get('Access-Control-Allow-Origin'),origin);
+ assert.equal(response.headers.get('Strict-Transport-Security'),'max-age=31536000');
+ const preflight=await worker.fetch(new Request(base+'/api/responses',{method:'OPTIONS',headers:{Origin:origin}}),env);
+ assert.equal(preflight.status,204);
+ assert.equal((await post({Origin:origin},env,'/api/export')).status,403);
+ assert.equal((await post({Origin:origin+'.evil.example'},env)).status,403);
+});

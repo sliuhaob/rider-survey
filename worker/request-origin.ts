@@ -1,6 +1,11 @@
 const allowed = new Set(['https://survey.roxy-design.com','https://survey-api.roxy-design.com','https://sliuhaob.github.io','http://127.0.0.1:5173','http://127.0.0.1:4173','http://127.0.0.1:8787']);
 type Environment = {LOCAL_DEVELOPMENT?: string};
 export function originAllowed(origin: string, url: URL, env: Environment): boolean {
+ // Let already-open HTTP questionnaires follow the method-preserving upgrade
+ // and finish their existing draft. This does not grant access to admin export.
+ if (origin === 'http://survey.roxy-design.com' && url.protocol === 'https:' &&
+     ['survey.roxy-design.com','survey-api.roxy-design.com'].includes(url.hostname) &&
+     url.pathname === '/api/responses') return true;
  const local = url.hostname === '127.0.0.1' || url.hostname === 'localhost';
  return allowed.has(origin) && (!origin.startsWith('http:') || local || env.LOCAL_DEVELOPMENT === 'true');
 }

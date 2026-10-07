@@ -21,14 +21,15 @@ async function api(request:Request,env:Env,url:URL){
  return json({receipt:body.id});
 }
 export default {async fetch(request:Request,env:Env):Promise<Response>{const url=new URL(request.url);
- if(url.pathname.startsWith('/api/')){let result:Response;try{result=await api(request,env,url);}catch{result=json({error:'暂时无法保存，请稍后重试'},503);}const headers=new Headers(result.headers),origin=request.headers.get('Origin')||'';if(originAllowed(origin,url,env)){headers.set('Access-Control-Allow-Origin',origin);headers.set('Access-Control-Allow-Methods','POST,GET,OPTIONS');headers.set('Access-Control-Allow-Headers','Content-Type,Authorization,X-Survey-Request');headers.set('Vary','Origin');}headers.set('X-Content-Type-Options','nosniff');return new Response(result.body,{status:result.status,headers});}
+ if(url.protocol==='http:'&&['survey.roxy-design.com','survey-api.roxy-design.com'].includes(url.hostname)){url.protocol='https:';return Response.redirect(url.href,307);}
+ if(url.pathname.startsWith('/api/')){let result:Response;try{result=await api(request,env,url);}catch{result=json({error:'暂时无法保存，请稍后重试'},503);}const headers=new Headers(result.headers),origin=request.headers.get('Origin')||'';if(originAllowed(origin,url,env)){headers.set('Access-Control-Allow-Origin',origin);headers.set('Access-Control-Allow-Methods','POST,GET,OPTIONS');headers.set('Access-Control-Allow-Headers','Content-Type,Authorization,X-Survey-Request');headers.set('Vary','Origin');}headers.set('X-Content-Type-Options','nosniff');headers.set('Strict-Transport-Security','max-age=31536000');return new Response(result.body,{status:result.status,headers});}
  if(url.pathname==='/admin'||url.pathname==='/admin/')return Response.redirect(url.origin+'/#admin',302);
  if(!['GET','HEAD'].includes(request.method))return new Response('Method not allowed',{status:405});
  if(url.pathname.includes('..')||url.pathname.includes('%'))return new Response('Invalid path',{status:400});
  const base=new URL(env.GITHUB_PAGES_URL);const upstream=new URL(base);upstream.pathname=base.pathname.replace(/\/$/,'')+(url.pathname==='/'?'/index.html':url.pathname);
  const response=await fetch(upstream,{method:request.method,redirect:'manual',headers:{Accept:request.headers.get('Accept')||'*/*'}});
  if(response.status>=300&&response.status<400)return new Response('Upstream unavailable',{status:502});
- const headers=new Headers(response.headers);headers.delete('Set-Cookie');headers.set('X-Content-Type-Options','nosniff');headers.set('Referrer-Policy','strict-origin-when-cross-origin');headers.set('X-Frame-Options','DENY');headers.set('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://survey-api.roxy-design.com; frame-ancestors 'none'; base-uri 'self'");
+ const headers=new Headers(response.headers);headers.delete('Set-Cookie');headers.set('X-Content-Type-Options','nosniff');headers.set('Strict-Transport-Security','max-age=31536000');headers.set('Referrer-Policy','strict-origin-when-cross-origin');headers.set('X-Frame-Options','DENY');headers.set('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://survey-api.roxy-design.com; frame-ancestors 'none'; base-uri 'self'");
  if(url.pathname==='/'||url.pathname.endsWith('.html'))headers.set('Cache-Control','no-cache');return new Response(response.body,{status:response.status,headers});
 }};
 
