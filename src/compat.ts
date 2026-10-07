@@ -16,6 +16,7 @@ export function submitAnswers(url: string, payload: unknown, ms = 45000): Promis
   xhr.open('POST', url, true);
   xhr.timeout = ms;
   xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.setRequestHeader('X-Survey-Request', '1');
   xhr.onerror = () => reject(new Error('网络请求未完成，请切换 Wi-Fi 或移动网络后重试。'));
   xhr.ontimeout = () => reject(new Error('等待服务器回复超时，请稍后重试。'));
   xhr.onabort = () => reject(new Error('提交请求被中断，请重试。'));
